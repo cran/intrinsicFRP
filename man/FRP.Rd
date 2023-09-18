@@ -7,7 +7,7 @@
 FRP(
   returns,
   factors,
-  krs = TRUE,
+  misspecification_robust = TRUE,
   include_standard_errors = FALSE,
   check_arguments = TRUE
 )
@@ -18,12 +18,13 @@ excess returns.}
 
 \item{factors}{\verb{n_observations x n_factors}-dimensional matrix of factors.}
 
-\item{krs}{boolean \code{TRUE} for Kar Robotti Shanken GLS approach using the inverse
-covariance matrix of returns; \code{FALSE} for standard Fama-Mac-Beth risk premia.
-Default is \code{TRUE}.}
+\item{misspecification_robust}{boolean \code{TRUE} for the
+"misspecification-robust" Kar Robotti Shanken GLS approach using the
+inverse covariance matrix of returns; \code{FALSE} for standard Fama-Mac-Beth
+risk premia. Default is \code{TRUE}.}
 
 \item{include_standard_errors}{boolean \code{TRUE} if you want to compute the
-adaptive intrinsic factor risk premia HAC standard errors; \code{FALSE} otherwise.
+factor risk premia HAC standard errors; \code{FALSE} otherwise.
 Default is \code{FALSE}.}
 
 \item{check_arguments}{boolean \code{TRUE} if you want to check function arguments;
@@ -45,8 +46,8 @@ i.e., \code{n_lags = 4 * (n_observations/100)^(2/9)}.
 }
 \examples{
 # import package data on 15 risk factors and 42 test asset excess returns
-factors = factors[,-1]
-returns = returns[,-1]
+factors = intrinsicFRP::factors[,-1]
+returns = intrinsicFRP::returns[,-1]
 
 # compute KRS factor risk premia and their standard errors
 frp = FRP(returns, factors, include_standard_errors = TRUE)

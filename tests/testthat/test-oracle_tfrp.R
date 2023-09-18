@@ -1,4 +1,4 @@
-test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
+test_that("Test OracleTFRP", {
 
   factors = factors[,-1]
   returns = returns[,-1]
@@ -18,145 +18,174 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
     seq(1e-2, 1e2, 100)
   )
 
-  ifrp = IFRP(returns, factors, include_standard_errors = TRUE)
+  tfrp = TFRP(returns, factors, include_standard_errors = TRUE)
 
   expect_no_error(
-    OptimalAdaptiveIFRP(
+    OracleTFRP(
       returns,
       factors,
       penalty_parameters,
       include_standard_errors = TRUE
   ))
 
-  expect_error(OptimalAdaptiveIFRP(
+  expect_error(OracleTFRP(
     t(returns),
     factors,
     penalty_parameters
   ))
-  expect_error(OptimalAdaptiveIFRP(
+  expect_error(OracleTFRP(
     returns,
     t(factors),
     penalty_parameters
   ))
-  expect_error(OptimalAdaptiveIFRP(
+  expect_error(OracleTFRP(
     t(returns),
     t(factors),
     penalty_parameters
   ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters = c("r", "s")
   ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       weighting_type = 4
-    ))
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       tuning_type = 4
-    ))
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       include_standard_errors = "r"
-    ))
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       one_stddev_rule = "r"
-    ))
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
-      gcv_aic_scaling = "r"
-    ))
+      gcv_scaling_n_assets = "r"
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       n_folds = "r"
-    ))
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       n_train_observations = "r"
-    ))
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       n_test_observations = "r"
-    ))
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       roll_shift = "r"
-    ))
+  ))
   expect_error(
-    OptimalAdaptiveIFRP(
-      t(returns),
-      t(factors),
+    OracleTFRP(
+      returns,
+      factors,
       penalty_parameters,
       check_arguments = "r"
-    ))
+  ))
+  expect_error(
+    OracleTFRP(
+      returns,
+      factors,
+      penalty_parameters,
+      check_arguments = "r",
+      target_level_kp2006_rank_test = -1.
+  ))
+  expect_error(
+    OracleTFRP(
+      returns,
+      factors,
+      penalty_parameters,
+      check_arguments = "r",
+      target_level_kp2006_rank_test = 1.5
+  ))
+
+  expect_equal(
+    OracleTFRP(
+      returns,
+      factors,
+      penalty_parameters,
+      gcv_identification_check = FALSE,
+      target_level_kp2006_rank_test = 0.05
+    )$risk_premia,
+    OracleTFRP(
+      returns,
+      factors,
+      penalty_parameters,
+      gcv_identification_check = TRUE,
+      target_level_kp2006_rank_test = 0.5
+    )$risk_premia
+  )
 
   weights =  intrinsicFRP:::AdaptiveWeightsCpp(returns, factors, 'c')
 
-  aifrp0 = AdaptiveIFRP(
+  oracle_tfrp0 = OracleTFRP(
     returns,
     factors,
-    penalty_parameters = 0,
-    weights
+    penalty_parameters = 0.
   )
 
-  expect_equal(aifrp0, ifrp$risk_premia)
+  expect_equal(oracle_tfrp0$risk_premia, tfrp$risk_premia)
 
-  aifrp1 = AdaptiveIFRP(
+  oracle_tfrp1 = OracleTFRP(
     returns,
     factors,
-    penalty_parameters = .1,
-    weights
+    penalty_parameters = .1
   )
 
-  aifrpm =  AdaptiveIFRP(
+  oracle_tfrpm =  OracleTFRP(
     returns,
     factors,
-    penalty_parameters,
-    weights
+    penalty_parameters
   )
 
-  expect_length(aifrp0, n_factors)
-  expect_length(aifrp1, n_factors)
-  expect_equal(ncol(aifrpm), length(penalty_parameters))
+  expect_length(oracle_tfrp0$risk_premia, n_factors)
+  expect_length(oracle_tfrp1$risk_premia, n_factors)
 
   ### GCV
   for (weighting_type in c('c', 'b', 'a', 'n')) {
     for (one_stddev_rule in c(TRUE, FALSE)) {
-      for (gcv_vr_weighting in c(TRUE, FALSE)) {
-        for (gcv_aic_scaling in c(TRUE, FALSE)) {
+      for (gcv_scaling_n_assets in c(TRUE, FALSE)) {
+        for (gcv_identification_check in c(TRUE, FALSE)) {
           for (relaxed in c(TRUE, FALSE)) {
 
-            adaptive_ifrp = OptimalAdaptiveIFRP(
+            oracle_tfrp = OracleTFRP(
               returns,
               factors,
               penalty_parameters,
@@ -164,17 +193,17 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
               tuning_type = 'g',
               include_standard_errors = TRUE,
               one_stddev_rule = one_stddev_rule,
-              gcv_vr_weighting = gcv_vr_weighting,
-              gcv_aic_scaling = gcv_aic_scaling,
+              gcv_scaling_n_assets = gcv_scaling_n_assets,
+              gcv_identification_check = gcv_identification_check,
               relaxed = relaxed
             )
 
-            expect_length(adaptive_ifrp$risk_premia, n_factors)
-            expect_length(adaptive_ifrp$standard_errors, n_factors)
-            expect_length(adaptive_ifrp$penalty_parameter, 1)
+            expect_length(oracle_tfrp$risk_premia, n_factors)
+            expect_length(oracle_tfrp$standard_errors, n_factors)
+            expect_length(oracle_tfrp$penalty_parameter, 1)
 
 
-            adaptive_ifrp0 = OptimalAdaptiveIFRP(
+            oracle_tfrp00 = OracleTFRP(
               returns,
               factors,
               penalty_parameters = 0.,
@@ -182,19 +211,19 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
               tuning_type = 'g',
               include_standard_errors = TRUE,
               one_stddev_rule = one_stddev_rule,
-              gcv_vr_weighting = gcv_vr_weighting,
-              gcv_aic_scaling = gcv_aic_scaling,
+              gcv_scaling_n_assets = gcv_scaling_n_assets,
+              gcv_identification_check = gcv_identification_check,
               relaxed = relaxed
             )
 
             expect_equal(
-              matrix(adaptive_ifrp0$risk_premia, n_factors, 1),
-              ifrp$risk_premia
+              matrix(oracle_tfrp00$risk_premia, n_factors, 1),
+              tfrp$risk_premia
             )
 
             if (weighting_type == 'c') {
 
-              adaptive_ifrp1 = OptimalAdaptiveIFRP(
+              oracle_tfrp1 = OracleTFRP(
                 returns,
                 factors,
                 penalty_parameters = .1,
@@ -202,14 +231,13 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
                 tuning_type = 'g',
                 include_standard_errors = TRUE,
                 one_stddev_rule = one_stddev_rule,
-                gcv_vr_weighting = gcv_vr_weighting,
-                gcv_aic_scaling = gcv_aic_scaling,
-                relaxed = FALSE
+                gcv_scaling_n_assets = gcv_scaling_n_assets,
+                gcv_identification_check = gcv_identification_check
               )
 
               expect_equal(
-                matrix(adaptive_ifrp1$risk_premia, n_factors, 1),
-                aifrp1
+                oracle_tfrp1$risk_premia,
+                oracle_tfrp1$risk_premia
               )
 
             }
@@ -225,7 +253,7 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
       for (n_folds in c(5, 10)) {
         for (relaxed in c(TRUE, FALSE)) {
 
-          adaptive_ifrp = OptimalAdaptiveIFRP(
+          oracle_tfrp = OracleTFRP(
             returns,
             factors,
             penalty_parameters,
@@ -237,12 +265,12 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
             relaxed = relaxed
           )
 
-          expect_length(adaptive_ifrp$risk_premia, n_factors)
-          expect_length(adaptive_ifrp$standard_errors, n_factors)
-          expect_length(adaptive_ifrp$penalty_parameter, 1)
+          expect_length(oracle_tfrp$risk_premia, n_factors)
+          expect_length(oracle_tfrp$standard_errors, n_factors)
+          expect_length(oracle_tfrp$penalty_parameter, 1)
 
 
-          adaptive_ifrp0 = OptimalAdaptiveIFRP(
+          oracle_tfrp00 = OracleTFRP(
             returns,
             factors,
             penalty_parameters = 0.,
@@ -255,13 +283,13 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
           )
 
           expect_equal(
-            matrix(adaptive_ifrp0$risk_premia, n_factors, 1),
-            ifrp$risk_premia
+            matrix(oracle_tfrp00$risk_premia, n_factors, 1),
+            tfrp$risk_premia
           )
 
           if (weighting_type == 'c') {
 
-            adaptive_ifrp1 = OptimalAdaptiveIFRP(
+            oracle_tfrp11 = OracleTFRP(
               returns,
               factors,
               penalty_parameters = .1,
@@ -269,13 +297,12 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
               tuning_type = 'c',
               include_standard_errors = TRUE,
               one_stddev_rule = one_stddev_rule,
-              n_folds = n_folds,
-              relaxed = FALSE
+              n_folds = n_folds
             )
 
             expect_equal(
-              matrix(adaptive_ifrp1$risk_premia, n_factors, 1),
-              aifrp1
+              oracle_tfrp11$risk_premia,
+              oracle_tfrp1$risk_premia
             )
 
           }
@@ -292,7 +319,7 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
           for (roll_shift in c(10, 12)) {
             for (relaxed in c(TRUE, FALSE)) {
 
-              adaptive_ifrp = OptimalAdaptiveIFRP(
+              oracle_tfrp = OracleTFRP(
                 returns,
                 factors,
                 penalty_parameters,
@@ -306,12 +333,12 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
                 relaxed = relaxed
               )
 
-              expect_length(adaptive_ifrp$risk_premia, n_factors)
-              expect_length(adaptive_ifrp$standard_errors, n_factors)
-              expect_length(adaptive_ifrp$penalty_parameter, 1)
+              expect_length(oracle_tfrp$risk_premia, n_factors)
+              expect_length(oracle_tfrp$standard_errors, n_factors)
+              expect_length(oracle_tfrp$penalty_parameter, 1)
 
 
-              adaptive_ifrp0 = OptimalAdaptiveIFRP(
+              oracle_tfrp00 = OracleTFRP(
                 returns,
                 factors,
                 penalty_parameters = 0.,
@@ -326,13 +353,13 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
               )
 
               expect_equal(
-                matrix(adaptive_ifrp0$risk_premia, n_factors, 1),
-                ifrp$risk_premia
+                matrix(oracle_tfrp00$risk_premia, n_factors, 1),
+                tfrp$risk_premia
               )
 
               if (weighting_type == 'c') {
 
-                adaptive_ifrp1 = OptimalAdaptiveIFRP(
+                oracle_tfrp11 = OracleTFRP(
                   returns,
                   factors,
                   penalty_parameters = .1,
@@ -342,13 +369,12 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
                   one_stddev_rule = one_stddev_rule,
                   n_train_observations = n_train_observations,
                   n_test_observations = n_test_observations,
-                  roll_shift = roll_shift,
-                  relaxed = FALSE
+                  roll_shift = roll_shift
                 )
 
                 expect_equal(
-                  matrix(adaptive_ifrp1$risk_premia, n_factors, 1),
-                  aifrp1
+                  oracle_tfrp11$risk_premia,
+                  oracle_tfrp1$risk_premia
                 )
 
               }
@@ -358,47 +384,5 @@ test_that("Test OptimalAdaptiveIFRP and AdaptiveIFRP", {
       }
     }
   }
-
-  # AdaptiveIFRP
-  for (weighting_type in c('c', 'b', 'a', 'n')) {
-    for (relaxed in c(TRUE, FALSE)) {
-
-      weights = intrinsicFRP:::AdaptiveWeightsCpp(
-        returns, factors, weighting_type
-      )
-
-      expect_no_error(
-        AdaptiveIFRP(
-          returns,
-          factors,
-          penalty_parameters,
-          weights,
-          relaxed = relaxed
-        )
-      )
-
-      expect_equal(
-        AdaptiveIFRP(
-          returns,
-          factors,
-          penalty_parameters = 0.,
-          weights,
-          relaxed = relaxed
-        ),
-        aifrp0
-      )
-
-      expect_equal(
-        AdaptiveIFRP(
-          returns,
-          factors,
-          penalty_parameters = 1e7,
-          weights,
-          relaxed = relaxed
-        ),
-        matrix(0., n_factors, 1)
-      )
-
-  }}
 
 })

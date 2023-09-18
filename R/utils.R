@@ -1,32 +1,32 @@
 # Author: Alberto Quaini
 
 
-# Plot adaptive IFRP model score
+# Plot Oracle TFRP model score
 #
-# @name PlotAdaptiveIFRPModelScore
-# @description Plots the model score of the adaptive IFRP for each penalty
+# @name PlotOracleTFRPModelScore
+# @description Plots the model score of the Oracle tradable factor risk premia
+# for each penalty
 # parameter value, highlighting the minimum attained model score and the
 # optimal one (which differs from the minimum in case the optimal parameter
 # was computed with the `one_stddev_rule` option TRUE).
 #
-# @param aifrp list containing the output of the function `OptimalAdaptiveIFRP`.
+# @param oracle_tfrp list containing the output of the function `OracleTFRP`.
 # @param penalty_parameters n_parameters-dimensional vector of penalty
 # parameter values from smallest to largest.
 # @param legend_pos character vector indicating the legend position. Must be
 # one of "bottomright", "bottom", "bottomleft", "left", "topleft", "top",
 # "topright", "right" and "center" . Default is "bottomright".
 #
-PlotAdaptiveIFRPModelScore = function(
-  aifrp,
-  penalty_parameters,
-  legend_pos = "bottomright"
+PlotOracleTFRPModelScore = function(
+  oracle_tfrp,
+  penalty_parameters
 ) {
 
-  optimal_par = aifrp$penalty_parameter
-  optimal_score = aifrp$model_score[penalty_parameters == aifrp$penalty_parameter]
+  optimal_score = oracle_tfrp$model_score[penalty_parameters == oracle_tfrp$penalty_parameter]
+
   plot(
     penalty_parameters,
-    aifrp$model_score,
+    oracle_tfrp$model_score,
     frame = FALSE,
     type = "b",
     pch = 20,
@@ -37,19 +37,22 @@ PlotAdaptiveIFRPModelScore = function(
     cex = 0.6,
     cex.lab = 1.3
   )
+
   graphics::points(
-    x = aifrp$penalty_parameter,
+    x = oracle_tfrp$penalty_parameter,
     y = optimal_score,
     pch = 15,
     col = "red"
   )
+
   graphics::abline(
-    v = aifrp$penalty_parameter,
+    v = oracle_tfrp$penalty_parameter,
     col = "red",
     lty = 2
   )
+
   graphics::legend(
-    legend_pos,
+    "topright",
     legend = c("Optimal"),
     col = "red",
     pch = 15,
@@ -63,8 +66,8 @@ PlotAdaptiveIFRPModelScore = function(
 # conforming to the packgae implementation.
 CheckData = function(returns, factors) {
 
-  stopifnot("`returns` does not contain numeric values" = is.numeric(returns))
-  stopifnot("`factors` does not contain numeric values" = is.numeric(returns))
+  stopifnot("`returns` must contain numeric values" = is.numeric(returns))
+  stopifnot("`factors` must contain numeric values" = is.numeric(returns))
   stopifnot("`returns` and `factors` must have the same number of rows" = nrow(returns) == nrow(factors))
   stopifnot("`returns` contains more assets (columns) than observations (rows)" = nrow(returns) > ncol(returns))
   stopifnot("`factors` contains more variables (columns) than observations (rows)" = nrow(factors) > ncol(factors))
