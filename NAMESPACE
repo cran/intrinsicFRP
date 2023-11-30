@@ -2,7 +2,10 @@
 
 export(ChenFang2019BetaRankTest)
 export(FRP)
-export(HJMisspecificationTest)
+export(GKRFactorScreening)
+export(HACcovariance)
+export(HJMisspecificationDistance)
+export(IterativeKleibergenPaap2006BetaRankTest)
 export(OracleTFRP)
 export(TFRP)
 importFrom(Rcpp,sourceCpp)

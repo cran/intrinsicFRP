@@ -11,22 +11,9 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
-// AdaptiveWeightsCpp
-arma::vec AdaptiveWeightsCpp(const arma::mat& returns, const arma::mat& factors, const char type);
-RcppExport SEXP _intrinsicFRP_AdaptiveWeightsCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP typeSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
-    Rcpp::traits::input_parameter< const char >::type type(typeSEXP);
-    rcpp_result_gen = Rcpp::wrap(AdaptiveWeightsCpp(returns, factors, type));
-    return rcpp_result_gen;
-END_RCPP
-}
 // FRPCpp
-Rcpp::List FRPCpp(const arma::mat& returns, const arma::mat& factors, const bool misspecification_robust, const bool include_standard_errors);
-RcppExport SEXP _intrinsicFRP_FRPCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP misspecification_robustSEXP, SEXP include_standard_errorsSEXP) {
+Rcpp::List FRPCpp(const arma::mat& returns, const arma::mat& factors, const bool misspecification_robust, const bool include_standard_errors, const bool hac_prewhite, const double target_level_gkr2014_screening);
+RcppExport SEXP _intrinsicFRP_FRPCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP misspecification_robustSEXP, SEXP include_standard_errorsSEXP, SEXP hac_prewhiteSEXP, SEXP target_level_gkr2014_screeningSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
@@ -34,7 +21,61 @@ BEGIN_RCPP
     Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
     Rcpp::traits::input_parameter< const bool >::type misspecification_robust(misspecification_robustSEXP);
     Rcpp::traits::input_parameter< const bool >::type include_standard_errors(include_standard_errorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(FRPCpp(returns, factors, misspecification_robust, include_standard_errors));
+    Rcpp::traits::input_parameter< const bool >::type hac_prewhite(hac_prewhiteSEXP);
+    Rcpp::traits::input_parameter< const double >::type target_level_gkr2014_screening(target_level_gkr2014_screeningSEXP);
+    rcpp_result_gen = Rcpp::wrap(FRPCpp(returns, factors, misspecification_robust, include_standard_errors, hac_prewhite, target_level_gkr2014_screening));
+    return rcpp_result_gen;
+END_RCPP
+}
+// GKRFactorScreeningCpp
+Rcpp::List GKRFactorScreeningCpp(const arma::mat& returns, const arma::mat& factors, const double target_level, const bool hac_prewhite);
+RcppExport SEXP _intrinsicFRP_GKRFactorScreeningCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP target_levelSEXP, SEXP hac_prewhiteSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
+    Rcpp::traits::input_parameter< const double >::type target_level(target_levelSEXP);
+    Rcpp::traits::input_parameter< const bool >::type hac_prewhite(hac_prewhiteSEXP);
+    rcpp_result_gen = Rcpp::wrap(GKRFactorScreeningCpp(returns, factors, target_level, hac_prewhite));
+    return rcpp_result_gen;
+END_RCPP
+}
+// HACCovarianceMatrixCpp
+arma::mat HACCovarianceMatrixCpp(arma::mat& series, const bool prewhite);
+RcppExport SEXP _intrinsicFRP_HACCovarianceMatrixCpp(SEXP seriesSEXP, SEXP prewhiteSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::mat& >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< const bool >::type prewhite(prewhiteSEXP);
+    rcpp_result_gen = Rcpp::wrap(HACCovarianceMatrixCpp(series, prewhite));
+    return rcpp_result_gen;
+END_RCPP
+}
+// HACVarianceCpp
+double HACVarianceCpp(arma::vec& series, const bool prewhite);
+RcppExport SEXP _intrinsicFRP_HACVarianceCpp(SEXP seriesSEXP, SEXP prewhiteSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< arma::vec& >::type series(seriesSEXP);
+    Rcpp::traits::input_parameter< const bool >::type prewhite(prewhiteSEXP);
+    rcpp_result_gen = Rcpp::wrap(HACVarianceCpp(series, prewhite));
+    return rcpp_result_gen;
+END_RCPP
+}
+// HJMisspecificationDistanceCpp
+Rcpp::List HJMisspecificationDistanceCpp(const arma::mat& returns, const arma::mat& factors, const double ci_coverage, const bool hac_prewhite);
+RcppExport SEXP _intrinsicFRP_HJMisspecificationDistanceCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP ci_coverageSEXP, SEXP hac_prewhiteSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
+    Rcpp::traits::input_parameter< const double >::type ci_coverage(ci_coverageSEXP);
+    Rcpp::traits::input_parameter< const bool >::type hac_prewhite(hac_prewhiteSEXP);
+    rcpp_result_gen = Rcpp::wrap(HJMisspecificationDistanceCpp(returns, factors, ci_coverage, hac_prewhite));
     return rcpp_result_gen;
 END_RCPP
 }
@@ -52,108 +93,70 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
-// HJMisspecificationTestCpp
-Rcpp::List HJMisspecificationTestCpp(const arma::mat& returns, const arma::mat& factors);
-RcppExport SEXP _intrinsicFRP_HJMisspecificationTestCpp(SEXP returnsSEXP, SEXP factorsSEXP) {
+// IterativeKleibergenPaap2006BetaRankTestCpp
+Rcpp::List IterativeKleibergenPaap2006BetaRankTestCpp(const arma::mat& returns, const arma::mat& factors, const double target_level);
+RcppExport SEXP _intrinsicFRP_IterativeKleibergenPaap2006BetaRankTestCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP target_levelSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(HJMisspecificationTestCpp(returns, factors));
+    Rcpp::traits::input_parameter< const double >::type target_level(target_levelSEXP);
+    rcpp_result_gen = Rcpp::wrap(IterativeKleibergenPaap2006BetaRankTestCpp(returns, factors, target_level));
     return rcpp_result_gen;
 END_RCPP
 }
-// OracleTFRPGCVCpp
-Rcpp::List OracleTFRPGCVCpp(const arma::mat& returns, const arma::mat& factors, const arma::mat& covariance_factors_returns, const arma::mat& variance_returns, const arma::vec& mean_returns, const arma::vec& penalty_parameters, const char weighting_type, const bool one_stddev_rule, const bool gcv_scaling_n_assets, const bool gcv_identification_check, const double target_level_kp2006_rank_test, const bool relaxed, const bool include_standard_errors);
-RcppExport SEXP _intrinsicFRP_OracleTFRPGCVCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP covariance_factors_returnsSEXP, SEXP variance_returnsSEXP, SEXP mean_returnsSEXP, SEXP penalty_parametersSEXP, SEXP weighting_typeSEXP, SEXP one_stddev_ruleSEXP, SEXP gcv_scaling_n_assetsSEXP, SEXP gcv_identification_checkSEXP, SEXP target_level_kp2006_rank_testSEXP, SEXP relaxedSEXP, SEXP include_standard_errorsSEXP) {
+// OracleTFRPCpp
+Rcpp::List OracleTFRPCpp(const arma::mat& returns, const arma::mat& factors, const arma::vec& penalty_parameters, const char weighting_type, const char tuning_type, const bool one_stddev_rule, const bool gcv_scaling_n_assets, const bool gcv_identification_check, const double target_level_kp2006_rank_test, const unsigned int n_folds, const unsigned int n_train_observations, const unsigned int n_test_observations, const unsigned int roll_shift, const bool relaxed, const bool include_standard_errors, const bool hac_prewhite);
+RcppExport SEXP _intrinsicFRP_OracleTFRPCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP penalty_parametersSEXP, SEXP weighting_typeSEXP, SEXP tuning_typeSEXP, SEXP one_stddev_ruleSEXP, SEXP gcv_scaling_n_assetsSEXP, SEXP gcv_identification_checkSEXP, SEXP target_level_kp2006_rank_testSEXP, SEXP n_foldsSEXP, SEXP n_train_observationsSEXP, SEXP n_test_observationsSEXP, SEXP roll_shiftSEXP, SEXP relaxedSEXP, SEXP include_standard_errorsSEXP, SEXP hac_prewhiteSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type covariance_factors_returns(covariance_factors_returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type variance_returns(variance_returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type mean_returns(mean_returnsSEXP);
     Rcpp::traits::input_parameter< const arma::vec& >::type penalty_parameters(penalty_parametersSEXP);
     Rcpp::traits::input_parameter< const char >::type weighting_type(weighting_typeSEXP);
+    Rcpp::traits::input_parameter< const char >::type tuning_type(tuning_typeSEXP);
     Rcpp::traits::input_parameter< const bool >::type one_stddev_rule(one_stddev_ruleSEXP);
     Rcpp::traits::input_parameter< const bool >::type gcv_scaling_n_assets(gcv_scaling_n_assetsSEXP);
     Rcpp::traits::input_parameter< const bool >::type gcv_identification_check(gcv_identification_checkSEXP);
     Rcpp::traits::input_parameter< const double >::type target_level_kp2006_rank_test(target_level_kp2006_rank_testSEXP);
-    Rcpp::traits::input_parameter< const bool >::type relaxed(relaxedSEXP);
-    Rcpp::traits::input_parameter< const bool >::type include_standard_errors(include_standard_errorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(OracleTFRPGCVCpp(returns, factors, covariance_factors_returns, variance_returns, mean_returns, penalty_parameters, weighting_type, one_stddev_rule, gcv_scaling_n_assets, gcv_identification_check, target_level_kp2006_rank_test, relaxed, include_standard_errors));
-    return rcpp_result_gen;
-END_RCPP
-}
-// OracleTFRPCVCpp
-Rcpp::List OracleTFRPCVCpp(const arma::mat& returns, const arma::mat& factors, const arma::mat& covariance_factors_returns, const arma::mat& variance_returns, const arma::vec& mean_returns, const arma::vec& penalty_parameters, const char weighting_type, const bool one_stddev_rule, const unsigned int n_folds, const bool relaxed, const bool include_standard_errors);
-RcppExport SEXP _intrinsicFRP_OracleTFRPCVCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP covariance_factors_returnsSEXP, SEXP variance_returnsSEXP, SEXP mean_returnsSEXP, SEXP penalty_parametersSEXP, SEXP weighting_typeSEXP, SEXP one_stddev_ruleSEXP, SEXP n_foldsSEXP, SEXP relaxedSEXP, SEXP include_standard_errorsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type covariance_factors_returns(covariance_factors_returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type variance_returns(variance_returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type mean_returns(mean_returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type penalty_parameters(penalty_parametersSEXP);
-    Rcpp::traits::input_parameter< const char >::type weighting_type(weighting_typeSEXP);
-    Rcpp::traits::input_parameter< const bool >::type one_stddev_rule(one_stddev_ruleSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type n_folds(n_foldsSEXP);
-    Rcpp::traits::input_parameter< const bool >::type relaxed(relaxedSEXP);
-    Rcpp::traits::input_parameter< const bool >::type include_standard_errors(include_standard_errorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(OracleTFRPCVCpp(returns, factors, covariance_factors_returns, variance_returns, mean_returns, penalty_parameters, weighting_type, one_stddev_rule, n_folds, relaxed, include_standard_errors));
-    return rcpp_result_gen;
-END_RCPP
-}
-// OracleTFRPRVCpp
-Rcpp::List OracleTFRPRVCpp(const arma::mat& returns, const arma::mat& factors, const arma::mat& covariance_factors_returns, const arma::mat& variance_returns, const arma::vec& mean_returns, const arma::vec& penalty_parameters, const char weighting_type, const bool one_stddev_rule, const unsigned int n_train_observations, const unsigned int n_test_observations, const unsigned int roll_shift, const bool relaxed, const bool include_standard_errors);
-RcppExport SEXP _intrinsicFRP_OracleTFRPRVCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP covariance_factors_returnsSEXP, SEXP variance_returnsSEXP, SEXP mean_returnsSEXP, SEXP penalty_parametersSEXP, SEXP weighting_typeSEXP, SEXP one_stddev_ruleSEXP, SEXP n_train_observationsSEXP, SEXP n_test_observationsSEXP, SEXP roll_shiftSEXP, SEXP relaxedSEXP, SEXP include_standard_errorsSEXP) {
-BEGIN_RCPP
-    Rcpp::RObject rcpp_result_gen;
-    Rcpp::RNGScope rcpp_rngScope_gen;
-    Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type covariance_factors_returns(covariance_factors_returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::mat& >::type variance_returns(variance_returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type mean_returns(mean_returnsSEXP);
-    Rcpp::traits::input_parameter< const arma::vec& >::type penalty_parameters(penalty_parametersSEXP);
-    Rcpp::traits::input_parameter< const char >::type weighting_type(weighting_typeSEXP);
-    Rcpp::traits::input_parameter< const bool >::type one_stddev_rule(one_stddev_ruleSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type n_train_observations(n_train_observationsSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type n_test_observations(n_test_observationsSEXP);
     Rcpp::traits::input_parameter< const unsigned int >::type roll_shift(roll_shiftSEXP);
     Rcpp::traits::input_parameter< const bool >::type relaxed(relaxedSEXP);
     Rcpp::traits::input_parameter< const bool >::type include_standard_errors(include_standard_errorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(OracleTFRPRVCpp(returns, factors, covariance_factors_returns, variance_returns, mean_returns, penalty_parameters, weighting_type, one_stddev_rule, n_train_observations, n_test_observations, roll_shift, relaxed, include_standard_errors));
+    Rcpp::traits::input_parameter< const bool >::type hac_prewhite(hac_prewhiteSEXP);
+    rcpp_result_gen = Rcpp::wrap(OracleTFRPCpp(returns, factors, penalty_parameters, weighting_type, tuning_type, one_stddev_rule, gcv_scaling_n_assets, gcv_identification_check, target_level_kp2006_rank_test, n_folds, n_train_observations, n_test_observations, roll_shift, relaxed, include_standard_errors, hac_prewhite));
     return rcpp_result_gen;
 END_RCPP
 }
 // TFRPCpp
-Rcpp::List TFRPCpp(const arma::mat& returns, const arma::mat& factors, const bool include_standard_errors);
-RcppExport SEXP _intrinsicFRP_TFRPCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP include_standard_errorsSEXP) {
+Rcpp::List TFRPCpp(const arma::mat& returns, const arma::mat& factors, const bool include_standard_errors, const bool hac_prewhite);
+RcppExport SEXP _intrinsicFRP_TFRPCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP include_standard_errorsSEXP, SEXP hac_prewhiteSEXP) {
 BEGIN_RCPP
     Rcpp::RObject rcpp_result_gen;
     Rcpp::RNGScope rcpp_rngScope_gen;
     Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
     Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
     Rcpp::traits::input_parameter< const bool >::type include_standard_errors(include_standard_errorsSEXP);
-    rcpp_result_gen = Rcpp::wrap(TFRPCpp(returns, factors, include_standard_errors));
+    Rcpp::traits::input_parameter< const bool >::type hac_prewhite(hac_prewhiteSEXP);
+    rcpp_result_gen = Rcpp::wrap(TFRPCpp(returns, factors, include_standard_errors, hac_prewhite));
     return rcpp_result_gen;
 END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
-    {"_intrinsicFRP_AdaptiveWeightsCpp", (DL_FUNC) &_intrinsicFRP_AdaptiveWeightsCpp, 3},
-    {"_intrinsicFRP_FRPCpp", (DL_FUNC) &_intrinsicFRP_FRPCpp, 4},
+    {"_intrinsicFRP_FRPCpp", (DL_FUNC) &_intrinsicFRP_FRPCpp, 6},
+    {"_intrinsicFRP_GKRFactorScreeningCpp", (DL_FUNC) &_intrinsicFRP_GKRFactorScreeningCpp, 4},
+    {"_intrinsicFRP_HACCovarianceMatrixCpp", (DL_FUNC) &_intrinsicFRP_HACCovarianceMatrixCpp, 2},
+    {"_intrinsicFRP_HACVarianceCpp", (DL_FUNC) &_intrinsicFRP_HACVarianceCpp, 2},
+    {"_intrinsicFRP_HJMisspecificationDistanceCpp", (DL_FUNC) &_intrinsicFRP_HJMisspecificationDistanceCpp, 4},
     {"_intrinsicFRP_ChenFang2019BetaRankTestCpp", (DL_FUNC) &_intrinsicFRP_ChenFang2019BetaRankTestCpp, 4},
-    {"_intrinsicFRP_HJMisspecificationTestCpp", (DL_FUNC) &_intrinsicFRP_HJMisspecificationTestCpp, 2},
-    {"_intrinsicFRP_OracleTFRPGCVCpp", (DL_FUNC) &_intrinsicFRP_OracleTFRPGCVCpp, 13},
-    {"_intrinsicFRP_OracleTFRPCVCpp", (DL_FUNC) &_intrinsicFRP_OracleTFRPCVCpp, 11},
-    {"_intrinsicFRP_OracleTFRPRVCpp", (DL_FUNC) &_intrinsicFRP_OracleTFRPRVCpp, 13},
-    {"_intrinsicFRP_TFRPCpp", (DL_FUNC) &_intrinsicFRP_TFRPCpp, 3},
+    {"_intrinsicFRP_IterativeKleibergenPaap2006BetaRankTestCpp", (DL_FUNC) &_intrinsicFRP_IterativeKleibergenPaap2006BetaRankTestCpp, 3},
+    {"_intrinsicFRP_OracleTFRPCpp", (DL_FUNC) &_intrinsicFRP_OracleTFRPCpp, 16},
+    {"_intrinsicFRP_TFRPCpp", (DL_FUNC) &_intrinsicFRP_TFRPCpp, 4},
     {NULL, NULL, 0}
 };
 
