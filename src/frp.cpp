@@ -42,18 +42,26 @@ Rcpp::List FRPCpp(
         Rcpp::Named("selected_factor_indices") = selected_factor_indices
       );
 
-    // Store the potentially new factors
-    const arma::mat factors_new = factors.cols(selected_factor_indices);
-
-    // return list of results, with selected factor indices
-    return ReturnFRPCpp(
+    // Otherwise, compute the factor risk premia and eventual standard errors
+    const Rcpp::List output = ReturnFRPCpp(
       returns,
-      factors_new,
+      factors.cols(selected_factor_indices),
       misspecification_robust,
       include_standard_errors,
-      hac_prewhite,
-      selected_factor_indices
+      hac_prewhite
     );
+
+    // Return the output list with additionally the selected factor indices
+    return include_standard_errors ?
+      Rcpp::List::create(
+        Rcpp::Named("risk_premia") = output["risk_premia"],
+        Rcpp::Named("standard_errors") = output["standard_errors"],
+        Rcpp::Named("selected_factor_indices") = selected_factor_indices
+      ) :
+      Rcpp::List::create(
+        Rcpp::Named("risk_premia") = output["risk_premia"],
+        Rcpp::Named("selected_factor_indices") = selected_factor_indices
+      );
 
   }
 
@@ -76,8 +84,7 @@ Rcpp::List ReturnFRPCpp(
   const arma::mat& factors,
   const bool misspecification_robust,
   const bool include_standard_errors,
-  const bool hac_prewhite,
-  const arma::uvec selected_factor_indices
+  const bool hac_prewhite
 ) {
 
   // Check if standard errors are to be included in the calculation
@@ -100,8 +107,7 @@ Rcpp::List ReturnFRPCpp(
       FMFRPCpp(beta, mean_returns);
 
     // Return risk premia and standard errors in a list
-    return selected_factor_indices.empty() ?
-      Rcpp::List::create(
+    return Rcpp::List::create(
         Rcpp::Named("risk_premia") =  frp,
         Rcpp::Named("standard_errors") = misspecification_robust ?
           StandardErrorsKRSFRPCpp(
@@ -109,7 +115,6 @@ Rcpp::List ReturnFRPCpp(
             returns,
             factors,
             beta,
-            covariance_factors_returns,
             variance_returns,
             mean_returns,
             hac_prewhite
@@ -119,36 +124,10 @@ Rcpp::List ReturnFRPCpp(
             returns,
             factors,
             beta,
-            covariance_factors_returns,
             variance_returns,
             mean_returns,
             hac_prewhite
           )
-      ) :
-      Rcpp::List::create(
-        Rcpp::Named("risk_premia") =  frp,
-        Rcpp::Named("standard_errors") = misspecification_robust ?
-          StandardErrorsKRSFRPCpp(
-            frp,
-            returns,
-            factors,
-            beta,
-            covariance_factors_returns,
-            variance_returns,
-            mean_returns,
-            hac_prewhite
-          ) :
-          StandardErrorsFRPCpp(
-            frp,
-            returns,
-            factors,
-            beta,
-            covariance_factors_returns,
-            variance_returns,
-            mean_returns,
-            hac_prewhite
-          ),
-        Rcpp::Named("selected_factor_indices") = selected_factor_indices
     );
 
   } else {
@@ -160,17 +139,10 @@ Rcpp::List ReturnFRPCpp(
     ).t();
 
     // Return risk premia only in a list
-    return selected_factor_indices.empty() ?
-      Rcpp::List::create(
-        Rcpp::Named("risk_premia") = misspecification_robust ?
-          KRSFRPCpp(beta, arma::mean(returns).t(), arma::cov(returns)) :
-          FMFRPCpp(beta, arma::mean(returns).t())
-      ) :
-      Rcpp::List::create(
-        Rcpp::Named("risk_premia") = misspecification_robust ?
-          KRSFRPCpp(beta, arma::mean(returns).t(), arma::cov(returns)) :
-          FMFRPCpp(beta, arma::mean(returns).t()),
-        Rcpp::Named("selected_factor_indices") = selected_factor_indices
+    return Rcpp::List::create(
+      Rcpp::Named("risk_premia") = misspecification_robust ?
+        KRSFRPCpp(beta, arma::mean(returns).t(), arma::cov(returns)) :
+        FMFRPCpp(beta, arma::mean(returns).t())
     );
 
   }
@@ -221,7 +193,6 @@ arma::vec StandardErrorsFRPCpp(
   const arma::mat& returns,
   const arma::mat& factors,
   const arma::mat& beta,
-  const arma::mat& covariance_factors_returns,
   const arma::mat& variance_returns,
   const arma::vec& mean_returns,
   const bool hac_prewhite
@@ -230,44 +201,32 @@ arma::vec StandardErrorsFRPCpp(
   // Compute the matrix H as the inverse of beta' * beta
   const arma::mat h_matrix  = InvSympd(beta.t() * beta);
 
-  // Compute matrix A used in the standard error calculation
-  const arma::mat a_matrix = h_matrix * beta.t();
-
   // Center the returns and factors
   const arma::mat returns_centred = returns.each_row() - mean_returns.t();
-  const arma::vec mean_factors = arma::mean(factors).t();
-  const arma::mat factors_centred = factors.each_row() - mean_factors.t();
+  const arma::mat factors_centred = factors.each_row() - arma::mean(factors);
 
-  // Intermediate matrices for standard error calculation
-  const arma::mat gamma = returns_centred * a_matrix.t();
-  const arma::vec gamma_true = a_matrix * mean_returns;
-  const arma::mat phi = gamma - factors;
-  const arma::mat phi_centred = phi.each_row() - (gamma_true - mean_factors).t();
+  // term1: mean returns
+  const arma::mat term1 = returns_centred * beta * h_matrix;
 
-  // Compute variance of factors and solve for fac_centred_var_fac_inv
-  const arma::mat variance_factors = arma::cov(factors);
-  const arma::mat fac_centred_var_fac_inv = SolveSympd(
-    variance_factors,
+  // term2: beta
+  const arma::mat phi_centred = term1 - factors_centred;
+  const arma::mat fac_cen_var_fac_inv = SolveSympd(
+    arma::cov(factors),
     factors_centred.t()
   ).t();
 
-  // Compute matrix Z used in standard error calculation
-  const arma::mat z = fac_centred_var_fac_inv.each_col() % (
+  // term3: misspecification
+  const arma::mat z = fac_cen_var_fac_inv.each_col() % (
     returns_centred * (mean_returns - beta * frp)
   );
 
   arma::mat series =
     // mean term
-    (gamma.each_row() - (a_matrix * mean_returns).t()) -
+    term1 -
     // beta term
-    phi_centred.each_col() % (factors_centred * SolveSympd(
-        variance_factors,
-        gamma_true
-    )) +
-    // error term
-    (fac_centred_var_fac_inv.each_col() % (
-        returns_centred * (mean_returns - beta * frp)
-    )) * h_matrix;
+    phi_centred.each_col() % (fac_cen_var_fac_inv * frp) +
+    // misspecification term
+    z * h_matrix;
 
   // Return the HAC standard errors of the estimator
   return HACStandardErrorsCpp(series, hac_prewhite) /
@@ -283,7 +242,6 @@ arma::vec StandardErrorsKRSFRPCpp(
   const arma::mat& returns,
   const arma::mat& factors,
   const arma::mat& beta,
-  const arma::mat& covariance_factors_returns,
   const arma::mat& variance_returns,
   const arma::vec& mean_returns,
   const bool hac_prewhite

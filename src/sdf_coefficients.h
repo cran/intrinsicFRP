@@ -1,34 +1,24 @@
 // Author: Alberto Quaini
 
-#ifndef FRP_H
-#define FRP_H
+#ifndef SDF_COEFFICIENTS_H
+#define SDF_COEFFICIENTS_H
 
 #include <RcppArmadillo.h>
 
-/////////////////////////////////////////////////
-////////////  Factor Risk Premia ////////////////
-/////////////////////////////////////////////////
+///////////////////////////////////////////////
+////////////  SDF Coefficients ////////////////
+///////////////////////////////////////////////
 
-// Compute factor risk premia
+// Compute SDF Coefficients
 //
-// @name FRP
-// @description Computes the Fama-MachBeth (1973) <doi:10.1086/260061> factor
-// risk premia:
-// `FMFRP = (beta' * beta)^{-1} * beta' * E[R]` where
-// `beta = Cov[R, F] * V[F]^{-1}`
-// or the misspecification-robust factor risk premia of Kan-Robotti-Shanken (2013)
-// <doi:10.1111/jofi.12035>:
-// `KRSFRP = (beta' * V[R]^{-1} * beta)^{-1} * beta' * V[R]^{-1} * E[R]`
+// @name SDFCoefficientsCpp
+// @description Computes the misspecification-robust SDF coefficients of
+// Gospodinov-Kan-Robotti (2014) <https://doi.org/10.1093/rfs/hht135>:
+// `GKRSDFcoefficients = (C' * V[R]^{-1} * C)^{-1} * C' * V[R]^{-1} * E[R]`
 // from data on factors `F` and test
 // asset excess returns `R`.
-// These notions of factor risk premia are by construction the negative
-// covariance of factors `F` with candidate SDF
-// `M = 1 - d' * (F - E[F])`,
-// where SDF coefficients `d` are obtained by minimizing pricing errors:
-// `argmin_{d} (E[R] - Cov[R,F] * d)' * (E[R] - Cov[R,F] * d)`
-// and
-// `argmin_{d} (E[R] - Cov[R,F] * d)' * V[R]^{-1} * (E[R] - Cov[R,F] * d)`,
-// respectively.
+// These notions of SDF coefficients minimize pricing errors:
+// `argmin_{d} (E[R] - Cov[R,F] * d)' * V[R]^{-1} * (E[R] - Cov[R,F] * d)`.
 // Optionally computes the corresponding
 // heteroskedasticity and autocorrelation robust standard errors using the
 // Newey-West (1994) <doi:10.2307/2297912> plug-in procedure to select the
@@ -42,7 +32,7 @@
 // inverse covariance matrix of returns; `FALSE` for standard Fama-MacBeth
 // risk premia. Default is `TRUE`.
 // @param include_standard_errors A boolean: `TRUE` if you want to compute the
-// factor risk premia HAC standard errors; `FALSE` otherwise.
+// SDF coefficients' HAC standard errors; `FALSE` otherwise.
 // Default is `FALSE`.
 // @param hac_prewhite A boolean indicating if the series needs pre-whitening by
 // fitting an AR(1) in the internal heteroskedasticity and autocorrelation
@@ -57,15 +47,15 @@
 // number of factors in the model at the current iteration. Default is `0.`, i.e.,
 // no factor screening.
 //
-// @return A list containing `n_factors`-dimensional vector of factor
-// risk premia in `"risk_premia"`; if `include_standard_errors = TRUE`, then
-// it further includes `n_factors`-dimensional vector of factor risk
-// premia standard errors in `"standard_errors"`;
+// @return A list containing `n_factors`-dimensional vector of fSDF coefficients
+// in `"sdf_coefficients"`; if `include_standard_errors = TRUE`, then
+// it further includes `n_factors`-dimensional vector of SDF coefficients'
+// standard errors in `"standard_errors"`;
 // if `target_level_gkr2014_screening >= 0`, it further includes the indices of
 // the selected factors in `selected_factor_indices`.
 //
 // [[Rcpp::export]]
-Rcpp::List FRPCpp(
+Rcpp::List SDFCoefficientsCpp(
   const arma::mat& returns,
   const arma::mat& factors,
   const bool misspecification_robust = true,
@@ -76,58 +66,61 @@ Rcpp::List FRPCpp(
 
 // Function for internal use
 // Compiles the list returned by `FRPCpp`.
-Rcpp::List ReturnFRPCpp(
+Rcpp::List ReturnSDFCoefficientsCpp(
   const arma::mat& returns,
   const arma::mat& factors,
   const bool misspecification_robust,
   const bool include_standard_errors,
-  const bool hac_prewhite
+  const bool hac_prewhite = false
 );
 
 // Function for internal use
-// Computes Fama-MacBeth (1973) <doi:10.1086/260061> factor risk premia from
-// moments extracted from data
-arma::vec FMFRPCpp(
-  const arma::mat& beta,
+// Computes the Fama-MacBeth (1973) <doi:10.1086/260061> from moments
+// extracted from data
+arma::vec FMSDFCoefficientsCpp(
+  const arma::mat& covariance_returns_factors,
   const arma::vec& mean_returns
 );
 
 // Function for internal use
-// Computes the misspecification robust factor risk premia of
-// Kan-Robotti-Shanken (2013) <doi:10.1111/jofi.12035> from moments extracted from data
-arma::vec KRSFRPCpp(
-  const arma::mat& beta,
-  const arma::vec& mean_returns,
-  const arma::mat& weighting_matrix
+// Computes the misspecification robust SDF coefficients of
+// Gospodinov-Kan-Robotti (2014)
+// <https://doi.org/10.1093/rfs/hht135> from moments extracted from data
+arma::vec GKRSDFCoefficientsCpp(
+  const arma::mat& covariance_returns_factors,
+  const arma::mat& variance_returns,
+  const arma::vec& mean_returns
 );
 
 // Function for internal use
 // Compute the standard errors of the Fama-MacBeth (1973) <doi:10.1086/260061>
-// factor risk premia from moments using the heteroskedasticity and
+// SDF coefficients from moments using the heteroskedasticity and
 // autocorrelation robust standard errors using the Newey-West (1994)
 // <doi:10.2307/2297912> plug-in procedure to select the number of relevant lags,
 // i.e., `n_lags = 4 * (n_observations/100)^(2/9)`.
-arma::vec StandardErrorsFRPCpp(
-  const arma::vec& frp,
+// Formulas adapted for working with excess returns are own derived.
+arma::vec StandardErrorsFMSDFCoefficientsCpp(
+  const arma::vec& fm_sdf_coefficients,
   const arma::mat& returns,
   const arma::mat& factors,
-  const arma::mat& beta,
-  const arma::mat& variance_returns,
+  const arma::mat& covariance_returns_factors,
   const arma::vec& mean_returns,
   const bool hac_prewhite = false
 );
 
 // Function for internal use
-// Compute the standard errors of the Kan-Robotti-Shanken (2013) <doi:10.1111/jofi.12035>
-// factor risk premia from moments using the heteroskedasticity and
+// Compute the standard errors of the Gospodinov-Kan-Robotti (2014) <https://doi.org/10.1093/rfs/hht135>
+// SDF coefficients from moments using the heteroskedasticity and
 // autocorrelation robust standard errors using the Newey-West (1994)
 // <doi:10.2307/2297912> plug-in procedure to select the number of relevant lags,
 // i.e., `n_lags = 4 * (n_observations/100)^(2/9)`.
-arma::vec StandardErrorsKRSFRPCpp(
-  const arma::vec& krs_frp,
+// Formula adapted for using excess returns are given in Kan Robotti (2008)
+// <https://doi.org/10.1016/j.jempfin.2008.03.003>
+arma::vec StandardErrorsGKRSDFCoefficientsCpp(
+  const arma::vec& gkr_sdf_coefficients,
   const arma::mat& returns,
   const arma::mat& factors,
-  const arma::mat& beta,
+  const arma::mat& covariance_returns_factors,
   const arma::mat& variance_returns,
   const arma::vec& mean_returns,
   const bool hac_prewhite = false

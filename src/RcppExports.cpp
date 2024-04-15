@@ -11,6 +11,33 @@ Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
 Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
 #endif
 
+// FGXThreePassCovarianceCpp
+arma::mat FGXThreePassCovarianceCpp(const arma::mat& returns, const arma::mat& selected_controls, const arma::mat& new_factors, const arma::vec& sdf_coefficients);
+RcppExport SEXP _intrinsicFRP_FGXThreePassCovarianceCpp(SEXP returnsSEXP, SEXP selected_controlsSEXP, SEXP new_factorsSEXP, SEXP sdf_coefficientsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type selected_controls(selected_controlsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type new_factors(new_factorsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sdf_coefficients(sdf_coefficientsSEXP);
+    rcpp_result_gen = Rcpp::wrap(FGXThreePassCovarianceCpp(returns, selected_controls, new_factors, sdf_coefficients));
+    return rcpp_result_gen;
+END_RCPP
+}
+// FGXThreePassCovarianceNoControlsCpp
+arma::mat FGXThreePassCovarianceNoControlsCpp(const arma::mat& returns, const arma::mat& new_factors, const arma::vec& sdf_coefficients);
+RcppExport SEXP _intrinsicFRP_FGXThreePassCovarianceNoControlsCpp(SEXP returnsSEXP, SEXP new_factorsSEXP, SEXP sdf_coefficientsSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type new_factors(new_factorsSEXP);
+    Rcpp::traits::input_parameter< const arma::vec& >::type sdf_coefficients(sdf_coefficientsSEXP);
+    rcpp_result_gen = Rcpp::wrap(FGXThreePassCovarianceNoControlsCpp(returns, new_factors, sdf_coefficients));
+    return rcpp_result_gen;
+END_RCPP
+}
 // FRPCpp
 Rcpp::List FRPCpp(const arma::mat& returns, const arma::mat& factors, const bool misspecification_robust, const bool include_standard_errors, const bool hac_prewhite, const double target_level_gkr2014_screening);
 RcppExport SEXP _intrinsicFRP_FRPCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP misspecification_robustSEXP, SEXP include_standard_errorsSEXP, SEXP hac_prewhiteSEXP, SEXP target_level_gkr2014_screeningSEXP) {
@@ -132,6 +159,22 @@ BEGIN_RCPP
     return rcpp_result_gen;
 END_RCPP
 }
+// SDFCoefficientsCpp
+Rcpp::List SDFCoefficientsCpp(const arma::mat& returns, const arma::mat& factors, const bool misspecification_robust, const bool include_standard_errors, const bool hac_prewhite, const double target_level_gkr2014_screening);
+RcppExport SEXP _intrinsicFRP_SDFCoefficientsCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP misspecification_robustSEXP, SEXP include_standard_errorsSEXP, SEXP hac_prewhiteSEXP, SEXP target_level_gkr2014_screeningSEXP) {
+BEGIN_RCPP
+    Rcpp::RObject rcpp_result_gen;
+    Rcpp::RNGScope rcpp_rngScope_gen;
+    Rcpp::traits::input_parameter< const arma::mat& >::type returns(returnsSEXP);
+    Rcpp::traits::input_parameter< const arma::mat& >::type factors(factorsSEXP);
+    Rcpp::traits::input_parameter< const bool >::type misspecification_robust(misspecification_robustSEXP);
+    Rcpp::traits::input_parameter< const bool >::type include_standard_errors(include_standard_errorsSEXP);
+    Rcpp::traits::input_parameter< const bool >::type hac_prewhite(hac_prewhiteSEXP);
+    Rcpp::traits::input_parameter< const double >::type target_level_gkr2014_screening(target_level_gkr2014_screeningSEXP);
+    rcpp_result_gen = Rcpp::wrap(SDFCoefficientsCpp(returns, factors, misspecification_robust, include_standard_errors, hac_prewhite, target_level_gkr2014_screening));
+    return rcpp_result_gen;
+END_RCPP
+}
 // TFRPCpp
 Rcpp::List TFRPCpp(const arma::mat& returns, const arma::mat& factors, const bool include_standard_errors, const bool hac_prewhite);
 RcppExport SEXP _intrinsicFRP_TFRPCpp(SEXP returnsSEXP, SEXP factorsSEXP, SEXP include_standard_errorsSEXP, SEXP hac_prewhiteSEXP) {
@@ -148,6 +191,8 @@ END_RCPP
 }
 
 static const R_CallMethodDef CallEntries[] = {
+    {"_intrinsicFRP_FGXThreePassCovarianceCpp", (DL_FUNC) &_intrinsicFRP_FGXThreePassCovarianceCpp, 4},
+    {"_intrinsicFRP_FGXThreePassCovarianceNoControlsCpp", (DL_FUNC) &_intrinsicFRP_FGXThreePassCovarianceNoControlsCpp, 3},
     {"_intrinsicFRP_FRPCpp", (DL_FUNC) &_intrinsicFRP_FRPCpp, 6},
     {"_intrinsicFRP_GKRFactorScreeningCpp", (DL_FUNC) &_intrinsicFRP_GKRFactorScreeningCpp, 4},
     {"_intrinsicFRP_HACCovarianceMatrixCpp", (DL_FUNC) &_intrinsicFRP_HACCovarianceMatrixCpp, 2},
@@ -156,6 +201,7 @@ static const R_CallMethodDef CallEntries[] = {
     {"_intrinsicFRP_ChenFang2019BetaRankTestCpp", (DL_FUNC) &_intrinsicFRP_ChenFang2019BetaRankTestCpp, 4},
     {"_intrinsicFRP_IterativeKleibergenPaap2006BetaRankTestCpp", (DL_FUNC) &_intrinsicFRP_IterativeKleibergenPaap2006BetaRankTestCpp, 3},
     {"_intrinsicFRP_OracleTFRPCpp", (DL_FUNC) &_intrinsicFRP_OracleTFRPCpp, 16},
+    {"_intrinsicFRP_SDFCoefficientsCpp", (DL_FUNC) &_intrinsicFRP_SDFCoefficientsCpp, 6},
     {"_intrinsicFRP_TFRPCpp", (DL_FUNC) &_intrinsicFRP_TFRPCpp, 4},
     {NULL, NULL, 0}
 };
